@@ -1,0 +1,106 @@
+<!doctype html>
+<html lang="pl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f5f7fb">
+  <title>Master QR Maker — generator kodów QR</title>
+  <meta name="description" content="Generator kodów QR z personalizacją, wydrukiem A4 i modelami stojaków 3D.">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <svg class="icon-defs" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+    <symbol id="i-grid" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><path d="M14 14h3v3h-3zM21 14v3M18 21h3M14 21h1"/></symbol>
+    <symbol id="i-spark" viewBox="0 0 24 24"><path d="m12 2 1.7 6.3L20 10l-6.3 1.7L12 18l-1.7-6.3L4 10l6.3-1.7L12 2ZM20 18l.6 1.4L22 20l-1.4.6L20 22l-.6-1.4L18 20l1.4-.6L20 18Z"/></symbol>
+    <symbol id="i-print" viewBox="0 0 24 24"><path d="M6 9V3h12v6M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><path d="M6 15h12v6H6zM18 12h.01"/></symbol>
+    <symbol id="i-box" viewBox="0 0 24 24"><path d="m12 2 9 5-9 5-9-5 9-5ZM3 7v10l9 5 9-5V7M12 12v10"/></symbol>
+    <symbol id="i-lock" viewBox="0 0 24 24"><rect x="4" y="10" width="16" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3M12 14v3"/></symbol>
+    <symbol id="i-down" viewBox="0 0 24 24"><path d="M12 3v12m0 0 4-4m-4 4-4-4M4 17v3h16v-3"/></symbol>
+    <symbol id="i-link" viewBox="0 0 24 24"><path d="M10 13a5 5 0 0 0 7.5.5l3-3a5 5 0 0 0-7-7l-1.7 1.7M14 11a5 5 0 0 0-7.5-.5l-3 3a5 5 0 0 0 7 7l1.7-1.7"/></symbol>
+    <symbol id="i-type" viewBox="0 0 24 24"><path d="M4 6V4h16v2M12 4v16m-4 0h8"/></symbol>
+    <symbol id="i-wifi" viewBox="0 0 24 24"><path d="M2 8a16 16 0 0 1 20 0M5 12a11 11 0 0 1 14 0M8.5 16a6 6 0 0 1 7 0M12 20h.01"/></symbol>
+    <symbol id="i-mail" viewBox="0 0 24 24"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m3 6 9 7 9-7"/></symbol>
+    <symbol id="i-user" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></symbol>
+    <symbol id="i-image" viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="18" rx="2"/><circle cx="8" cy="9" r="2"/><path d="m3 18 5-5 4 4 4-5 5 6"/></symbol>
+    <symbol id="i-check" viewBox="0 0 24 24"><path d="m4 12 5 5L20 6"/></symbol>
+    <symbol id="i-info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 11v6M12 7h.01"/></symbol>
+    <symbol id="i-reset" viewBox="0 0 24 24"><path d="M3 11a9 9 0 1 1 2.3 6M3 4v7h7"/></symbol>
+  </svg>
+
+  <div class="app-shell">
+    <aside class="sidebar">
+      <div class="brand"><div class="brand-mark"><svg><use href="#i-grid"/></svg></div><div><strong>Master QR Maker</strong><span>QR STUDIO</span></div></div>
+      <div class="nav-label">PRZESTRZEŃ ROBOCZA</div>
+      <nav aria-label="Nawigacja główna">
+        <a class="nav-item active" href="#studio" aria-current="location"><svg><use href="#i-grid"/></svg><span>Studio QR</span></a>
+        <a class="nav-item" href="#personalizacja"><svg><use href="#i-spark"/></svg><span>Personalizacja</span></a>
+        <a class="nav-item" href="#eksport"><svg><use href="#i-down"/></svg><span>Eksport</span></a>
+      </nav>
+    </aside>
+
+    <main class="main" id="studio">
+      <header class="topbar"><div class="breadcrumbs">Narzędzia <span>/</span> <strong>Studio QR</strong></div><div class="top-actions"><div class="lang-switch" role="group" aria-label="Language / Język"><button type="button" data-lang="pl" class="active" aria-pressed="true">PL</button><button type="button" data-lang="en" aria-pressed="false">EN</button></div></div></header>
+      <div class="workspace">
+        <div class="page-heading"><div><div class="eyebrow"><span class="eyebrow-line"></span> KREATOR QR</div><h1>Zaprojektuj swój kod QR<span>.</span></h1><p>Od cyfrowego linku po gotowy stojak — wszystko w jednym miejscu.</p></div><button id="resetBtn" class="btn btn-quiet"><svg><use href="#i-reset"/></svg> Nowy projekt</button></div>
+
+        <div class="studio-grid">
+          <section class="editor-column" aria-label="Ustawienia generatora">
+            <div class="panel">
+              <div class="panel-head"><div class="step">01</div><div><h2>Co chcesz zakodować?</h2><p>Wybierz typ i uzupełnij dane</p></div></div>
+              <div class="panel-body">
+                <div class="type-grid" role="group" aria-label="Typ kodu QR">
+                  <button class="type-option active" type="button" data-mode="url" aria-pressed="true"><svg><use href="#i-link"/></svg><span>Link</span></button>
+                  <button class="type-option" type="button" data-mode="text" aria-pressed="false"><svg><use href="#i-type"/></svg><span>Tekst</span></button>
+                  <button class="type-option" type="button" data-mode="wifi" aria-pressed="false"><svg><use href="#i-wifi"/></svg><span>Wi-Fi</span></button>
+                  <button class="type-option" type="button" data-mode="email" aria-pressed="false"><svg><use href="#i-mail"/></svg><span>E-mail</span></button>
+                  <button class="type-option" type="button" data-mode="contact" aria-pressed="false"><svg><use href="#i-user"/></svg><span>Kontakt</span></button>
+                </div>
+                <div id="modeFields" class="form-fields"></div>
+                <div id="inputError" class="field-error" role="alert" hidden></div>
+              </div>
+            </div>
+
+            <div class="panel" id="personalizacja">
+              <div class="panel-head"><div class="step">02</div><div><h2>Nadaj mu charakter</h2><p>Kolory, znak w środku i podpis</p></div></div>
+              <div class="panel-body">
+                <div class="field-label">Znak w centrum kodu <span class="optional">opcjonalnie</span></div>
+                <div class="segmented" role="group" aria-label="Rodzaj znaku">
+                  <button class="segment active" type="button" data-overlay="none">Bez znaku</button>
+                  <button class="segment" type="button" data-overlay="image">Obraz</button>
+                  <button class="segment" type="button" data-overlay="text">Napis</button>
+                </div>
+                <div id="overlayControls"></div>
+                <div class="field-row colors-row"><label class="field"><span>Kolor kodu</span><span class="color-control"><input id="darkColor" type="color" value="#173556" aria-label="Kolor kodu"><code id="darkHex">#173556</code></span></label><label class="field"><span>Tło kodu</span><span class="color-control"><input id="lightColor" type="color" value="#ffffff" aria-label="Kolor tła"><code id="lightHex">#FFFFFF</code></span></label></div>
+                <label class="field"><span>Podpis pod kodem</span><input id="caption" type="text" maxlength="64" value="Zeskanuj i odkryj więcej" placeholder="Np. Zeskanuj, aby otworzyć menu"></label>
+                <div class="helper-note"><svg><use href="#i-info"/></svg><span>Środek kodu ma ograniczony rozmiar. Przed drukiem zeskanuj gotowy projekt telefonem.</span></div>
+              </div>
+            </div>
+
+            <div class="panel" id="eksport">
+              <div class="panel-head"><div class="step">03</div><div><h2>Przygotuj do użycia</h2><p>Wybierz format gotowego projektu</p></div></div>
+              <div class="panel-body export-panel"><button class="export-row" id="pngBtn" type="button"><div class="export-icon blue"><svg><use href="#i-image"/></svg></div><div><strong>Pobierz PNG</strong><span>Wysoka rozdzielczość, 1600 × 1600 px</span></div><svg class="export-arrow"><use href="#i-down"/></svg></button><button class="export-row" id="svgBtn" type="button"><div class="export-icon violet"><svg><use href="#i-grid"/></svg></div><div><strong>Pobierz SVG</strong><span>Wektor do dowolnego skalowania</span></div><svg class="export-arrow"><use href="#i-down"/></svg></button><button class="export-row" id="printBtn" type="button"><div class="export-icon amber"><svg><use href="#i-print"/></svg></div><div><strong>Drukuj kartkę A4</strong><span>Gotowy układ z tytułem i kodem</span></div><svg class="export-arrow"><use href="#i-down"/></svg></button><button class="export-row" id="plateBtn" type="button"><div class="export-icon teal"><svg><use href="#i-box"/></svg></div><div><strong>Pobierz płytkę STL</strong><span>Wypukły kod QR i podpis</span></div><svg class="export-arrow"><use href="#i-down"/></svg></button><button class="export-row" id="baseBtn" type="button"><div class="export-icon slate"><svg><use href="#i-box"/></svg></div><div><strong>Pobierz stopkę STL</strong><span>Podstawka z dopasowaną szczeliną</span></div><svg class="export-arrow"><use href="#i-down"/></svg></button></div>
+            </div>
+          </section>
+
+          <section class="preview-column" aria-label="Podgląd projektu">
+            <div class="preview-panel"><div class="preview-head"><div><div class="preview-kicker">PODGLĄD NA ŻYWO</div><h2>Twój projekt</h2></div><span class="live-pill"><i></i> Na żywo</span></div>
+              <div class="preview-tabs" role="tablist" aria-label="Rodzaj podglądu"><button type="button" role="tab" class="preview-tab active" aria-selected="true" data-preview="qr">Kod QR</button><button type="button" role="tab" class="preview-tab" aria-selected="false" data-preview="paper">Kartka A4</button><button type="button" role="tab" class="preview-tab" aria-selected="false" data-preview="stand">Stojak 3D</button></div>
+              <div class="preview-stage">
+                <div class="preview-view active" id="qrView"><div class="qr-presentation"><div id="qrPreview" class="qr-preview"></div><div id="qrCaption" class="qr-caption"></div></div></div>
+                <div class="preview-view" id="paperView"><div class="paper-sheet"><div class="paper-topline"></div><div class="paper-logo"><span class="paper-logo-mark">⌗</span> MASTER QR MAKER</div><div class="paper-center"><div class="paper-overline">POŁĄCZ SIĘ Z NAMI</div><h3 id="paperTitle">Zeskanuj kod QR</h3><div id="paperQr" class="paper-qr"></div><p id="paperCaption">Zeskanuj i odkryj więcej</p></div><div class="paper-footer">Master QR Maker</div></div></div>
+                <div class="preview-view" id="standView"><div class="stand-scene"><div class="stand-shadow"></div><div class="stand-plaque"><div id="standQr" class="stand-qr"></div><div id="standCaption" class="stand-caption"></div></div><div class="stand-foot"></div></div><div id="standDimensions" class="stand-caption-note">Podgląd poglądowy • płytka 100 mm + stopka 110 mm</div></div>
+              </div>
+              <div class="preview-meta"><div><span>ROZMIAR MATRYCY</span><strong id="matrixSize">—</strong></div><div><span>KOREKCJA BŁĘDÓW</span><strong>Wysoka · H</strong></div><div><span>TYP KODU</span><strong id="modeMeta">Link</strong></div></div>
+            </div>
+            <div class="tip-card"><div class="tip-icon"><svg><use href="#i-spark"/></svg></div><div><strong>Mała wskazówka</strong><p>Do druku 3D użyj ciemnego filamentu dla wypukłych modułów i jasnego tła. Jednokolorowy wydruk może być trudny do zeskanowania.</p></div></div>
+          </section>
+        </div>
+        <footer class="main-footer"><span>© 2026 Master QR Maker</span></footer>
+      </div>
+    </main>
+  </div>
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+  <script src="vendor/qrcode.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

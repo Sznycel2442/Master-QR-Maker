@@ -1,0 +1,16 @@
+# Local state and test artifacts
+*.log
+__pycache__/
+.pytest_cache/
+.playwright/
+.env
+.env.*
+*.local
+
+# User-generated QR files may contain private URLs, contact details or Wi-Fi passwords
+private/
+exports/
+downloads/
+master-qr-maker*.png
+master-qr-maker*.svg
+master-qr-maker*.stl
