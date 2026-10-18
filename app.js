@@ -310,15 +310,24 @@
     return path;
   }
   function builtinIcon(name) {
-    if (name !== "nfc") {
-      const symbol=$("i-"+name), path=symbol?.querySelector?.("path");
-      if (path) return {viewBox:symbol.getAttribute("viewBox"),path:path.getAttribute("d"),fontAwesome:true};
-    }
-    return {viewBox:"0 0 32 32",path:bitmapPath(iconBits(name)),fontAwesome:false};
+    const symbol=$("i-"+name), path=symbol?.querySelector?.("path");
+    if (path) return {viewBox:symbol.getAttribute("viewBox"),path:path.getAttribute("d")};
+    return {viewBox:"0 0 32 32",path:bitmapPath(iconBits(name))};
   }
   function builtinIconSvg(name) {
     const icon=builtinIcon(name);
     return `<svg viewBox="${icon.viewBox}" aria-hidden="true"><path fill="currentColor" stroke="none" d="${icon.path}"/></svg>`;
+  }
+  function rasterIconBits(name) {
+    if (typeof Path2D === "undefined") return iconBits(name);
+    const icon=builtinIcon(name), canvas=document.createElement("canvas");
+    canvas.width=canvas.height=32;
+    const ctx=canvas.getContext("2d"),[, , w, h]=icon.viewBox.split(/\s+/).map(Number);
+    const scale=Math.min(28/w,28/h);
+    ctx.translate((32-w*scale)/2,(32-h*scale)/2);ctx.scale(scale,scale);
+    ctx.fillStyle="#000";ctx.fill(new Path2D(icon.path));
+    const data=ctx.getImageData(0,0,32,32).data;
+    return Array.from({length:32},(_,y)=>Array.from({length:32},(_,x)=>data[(y*32+x)*4+3]>130));
   }
   function render() {
     try {
@@ -330,7 +339,7 @@
       $("standQr").innerHTML = qrSvg;
       ["qrCaption","paperCaption","standCaption"].forEach(id=>$(id).innerHTML=captionMarkup());
       $("standNfc").hidden = !$("nfcEnabled").checked;
-      $("standNfc").innerHTML = $("nfcEnabled").checked ? `<svg viewBox="0 0 32 32" aria-label="NFC"><path fill="currentColor" d="${bitmapPath(iconBits("nfc"))}"/></svg><span>NFC</span>` : "";
+      $("standNfc").innerHTML = $("nfcEnabled").checked ? `<svg viewBox="0 0 32 32" aria-label="NFC"><path fill="currentColor" d="${builtinIcon("nfc").path}"/></svg><span>NFC</span>` : "";
       $("matrixSize").textContent = `${matrix.length} × ${matrix.length}`;
       const {width,height}=dimensions();
       $("standDimensions").textContent = t("standDimensions").replace("{width}", Math.round(width)).replace("{height}", Math.round(height)).replace("{base}", Math.round(width+10));
@@ -472,14 +481,7 @@
   }
   function markBitmap() {
     if (overlay === "icon") {
-      const icon=builtinIcon(selectedIcon);
-      if (!icon.fontAwesome || typeof Path2D === "undefined") return iconBits(selectedIcon);
-      const canvas=document.createElement("canvas");canvas.width=canvas.height=32;
-      const ctx=canvas.getContext("2d"),[, , w, h]=icon.viewBox.split(/\s+/).map(Number);
-      const scale=Math.min(28/w,28/h);
-      ctx.translate((32-w*scale)/2,(32-h*scale)/2);ctx.scale(scale,scale);ctx.fillStyle="#000";ctx.fill(new Path2D(icon.path));
-      const data=ctx.getImageData(0,0,32,32).data;
-      return Array.from({length:32},(_,y)=>Array.from({length:32},(_,x)=>data[(y*32+x)*4+3]>130));
+      return rasterIconBits(selectedIcon);
     }
     const canvas = document.createElement("canvas"); canvas.width = canvas.height = 32;
     const ctx = canvas.getContext("2d");
@@ -518,7 +520,7 @@
       addRasterText(tris,$("caption").value.trim(),10,textStart,width-20,10,plateZ,.8);
     } else addRasterText(tris,$("caption").value.trim(),10,textStart+1,width-20,17,plateZ,.8);
     if ($("nfcEnabled").checked) {
-      const bits=iconBits("nfc"),size=20,pixel=size/32,x0=(width-size)/2,y0=10;
+      const bits=rasterIconBits("nfc"),size=20,pixel=size/32,x0=(width-size)/2,y0=10;
       for(let row=0;row<32;row++)for(let col=0;col<32;col++)if(bits[row][col])addBox(tris,x0+col*pixel,y0+(31-row)*pixel,plateZ,x0+(col+1)*pixel,y0+(32-row)*pixel,plateZ+.8);
     }
     return stlBlob(tris);

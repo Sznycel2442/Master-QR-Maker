@@ -132,9 +132,23 @@ try:
             page.locator(f'[data-icon="{icon}"]').click()
             assert page.locator(f'[data-icon="{icon}"]').get_attribute("aria-pressed") == "true"
             assert page.locator("#qrPreview svg path").count() >= 2
+        page.locator('[data-icon="nfc"]').click()
+        nfc_path = page.locator("#i-nfc path").get_attribute("d")
+        page.wait_for_function("document.querySelector('#qrPreview svg path:last-of-type')?.getAttribute('d') === document.querySelector('#i-nfc path')?.getAttribute('d')")
+        assert page.locator('[data-icon="nfc"] svg path').get_attribute("d") == nfc_path
+        page.locator("#nfcEnabled").check()
+        page.locator('[data-preview="stand"]').click()
+        assert page.locator("#standNfc path").get_attribute("d") == nfc_path
+        with page.expect_download() as event:
+            page.locator("#svgBtn").click()
+        nfc_svg = Path(directory) / "nfc.svg"
+        event.value.save_as(nfc_svg)
+        assert nfc_path in nfc_svg.read_text(encoding="utf-8")
+        page.locator('[data-preview="qr"]').click()
+        page.screenshot(path=str(ROOT / "preview-icons.png"), full_page=True)
+        page.locator("#nfcEnabled").uncheck()
         page.locator('[data-icon="radio"]').click()
         page.wait_for_function("document.querySelector('#qrPreview svg path:last-of-type')?.getAttribute('d') === document.querySelector('#i-radio path')?.getAttribute('d')")
-        page.screenshot(path=str(ROOT / "preview-icons.png"), full_page=True)
         with page.expect_download() as event:
             page.locator("#svgBtn").click()
         fa_svg = Path(directory) / "fontawesome-radio.svg"
@@ -159,6 +173,10 @@ try:
         page.locator("#imageUpload").set_input_files({"name": "znak.svg", "mimeType": "image/svg+xml", "buffer": svg})
         page.locator(".upload-thumb").wait_for()
         page.locator("#qrPreview image").wait_for()
+        unsafe_svg = b'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><script>window.svgScriptRan=true</script><image href="https://example.invalid/track.png" width="100" height="100"/><circle cx="50" cy="50" r="36" fill="blue"/></svg>'
+        page.locator("#imageUpload").set_input_files({"name": "local.svg", "mimeType": "image/svg+xml", "buffer": unsafe_svg})
+        page.wait_for_function("document.querySelector('.upload-zone strong')?.textContent === 'local.svg'")
+        assert not page.evaluate("Boolean(window.svgScriptRan)")
 
         page.locator('[data-preview="paper"]').click()
         assert page.locator("#paperView").is_visible()
