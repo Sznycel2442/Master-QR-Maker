@@ -8,7 +8,11 @@
       eyebrow: "KREATOR QR", heading: "Zaprojektuj swój kod QR", subheading: "Od cyfrowego linku po gotowy stojak — wszystko w jednym miejscu.", newProject: "Nowy projekt",
       section1Title: "Co chcesz zakodować?", section1Sub: "Wybierz typ i uzupełnij dane", section2Title: "Nadaj mu charakter", section2Sub: "Kolory, znak w środku i podpis", section3Title: "Przygotuj do użycia", section3Sub: "Wybierz format gotowego projektu",
       modeUrl: "Link", modeText: "Tekst", modeWifi: "Wi-Fi", modeEmail: "E-mail", modeContact: "Kontakt",
-      centerMark: "Znak w centrum kodu", optional: "opcjonalnie", none: "Bez znaku", image: "Obraz", lettering: "Napis",
+      centerMark: "Znak w centrum kodu", optional: "opcjonalnie", none: "Bez znaku", icon: "Ikona", image: "Obraz", lettering: "Napis",
+      iconWifi: "Wi-Fi", iconHome: "Dom", iconNfc: "NFC", iconRadio: "Radio", iconGlobe: "Internet", iconPhone: "Telefon", iconMail: "E-mail", iconLink: "Link",
+      iconPicker: "Wybierz ikonę", wifiDetails: "Pokaż SSID i hasło pod kodem", wifiDetailsHint: "Dane będą widoczne na podglądzie, wydruku i eksporcie.", additionalCaption: "Dodatkowy napis", openPassword: "Sieć otwarta",
+      nfcEnable: "Dodaj NFC do stojaka 3D", nfcSub: "Kieszeń na naklejkę i wypukły symbol NFC", nfcPosition: "Położenie naklejki", nfcQr: "Za kodem QR", nfcCaption: "Za podpisem", nfcSymbol: "Za symbolem NFC", nfcDiameter: "Średnica naklejki (mm)", nfcThickness: "Grubość naklejki (mm)",
+      nfcPause: "Zaprogramuj naklejkę osobno. W slicerze wstaw pauzę tuż przed zamknięciem kieszeni, około Z = {z} mm. Włóż naklejkę i wznów druk; sprawdź warstwę w podglądzie slicera.",
       darkColor: "Kolor kodu", lightColor: "Tło kodu", caption: "Podpis pod kodem", captionPlaceholder: "Np. Zeskanuj, aby otworzyć menu", defaultCaption: "Zeskanuj i odkryj więcej",
       helper: "Środek kodu ma ograniczony rozmiar. Przed drukiem zeskanuj gotowy projekt telefonem.",
       pngTitle: "Pobierz PNG", pngSub: "Wysoka rozdzielczość, 1600 × 1600 px", svgTitle: "Pobierz SVG", svgSub: "Wektor do dowolnego skalowania",
@@ -38,7 +42,11 @@
       eyebrow: "QR CREATOR", heading: "Design your QR code", subheading: "From a digital link to a ready to print stand — all in one place.", newProject: "New project",
       section1Title: "What would you like to encode?", section1Sub: "Choose a type and enter the details", section2Title: "Make it yours", section2Sub: "Colors, center mark and caption", section3Title: "Ready to use", section3Sub: "Choose an output format",
       modeUrl: "Link", modeText: "Text", modeWifi: "Wi-Fi", modeEmail: "Email", modeContact: "Contact",
-      centerMark: "Center mark", optional: "optional", none: "No mark", image: "Image", lettering: "Text",
+      centerMark: "Center mark", optional: "optional", none: "No mark", icon: "Icon", image: "Image", lettering: "Text",
+      iconWifi: "Wi-Fi", iconHome: "Home", iconNfc: "NFC", iconRadio: "Radio", iconGlobe: "Web", iconPhone: "Phone", iconMail: "Email", iconLink: "Link",
+      iconPicker: "Choose an icon", wifiDetails: "Show SSID and password below the code", wifiDetailsHint: "These details will appear in the preview, print and export.", additionalCaption: "Additional text", openPassword: "Open network",
+      nfcEnable: "Add NFC to the 3D stand", nfcSub: "Sticker pocket and raised NFC symbol", nfcPosition: "Sticker location", nfcQr: "Behind the QR code", nfcCaption: "Behind the caption", nfcSymbol: "Behind the NFC symbol", nfcDiameter: "Sticker diameter (mm)", nfcThickness: "Sticker thickness (mm)",
+      nfcPause: "Program the sticker separately. In your slicer, pause just before the pocket closes, around Z = {z} mm. Insert the sticker, resume printing, and check the layer in the slicer preview.",
       darkColor: "QR color", lightColor: "Background", caption: "Caption below the code", captionPlaceholder: "E.g. Scan to open the menu", defaultCaption: "Scan to discover more",
       helper: "Keep the center mark small. Scan the finished code with your phone before printing.",
       pngTitle: "Download PNG", pngSub: "High resolution, 1600 × 1600 px", svgTitle: "Download SVG", svgSub: "Scalable vector graphic",
@@ -69,12 +77,12 @@
   const makeDefaults = locale => ({
     url: { url: "https://example.com" },
     text: { text: locale === "pl" ? "Witaj! To mój kod QR." : "Hello! This is my QR code." },
-    wifi: { ssid: locale === "pl" ? "Moja sieć" : "My network", password: "", security: "WPA", hidden: false },
+    wifi: { ssid: locale === "pl" ? "Moja sieć" : "My network", password: "", security: "WPA", hidden: false, showDetails: false },
     email: { email: "kontakt@example.com", subject: locale === "pl" ? "Wiadomość z kodu QR" : "Message from a QR code", body: "" },
     contact: { name: locale === "pl" ? "Przykładowa Osoba" : "Example Person", phone: "000 000 000", email: "osoba@example.com", organization: "" }
   });
   let values = makeDefaults(lang);
-  let mode = "url", overlay = "none", imageData = "", overlayImg = null, imageName = "";
+  let mode = "url", overlay = "none", selectedIcon = "wifi", imageData = "", overlayImg = null, imageName = "";
   let matrix = null, qrSvg = "", renderTimer = 0, toastTimer = 0;
   const modeFields = $("modeFields");
   const overlayControls = $("overlayControls");
@@ -90,7 +98,7 @@
       [".page-heading p", "subheading"], [".editor-column > .panel:first-child .panel-head h2", "section1Title"], [".editor-column > .panel:first-child .panel-head p", "section1Sub"],
       ["#personalizacja .panel-head h2", "section2Title"], ["#personalizacja .panel-head p", "section2Sub"], ["#eksport .panel-head h2", "section3Title"], ["#eksport .panel-head p", "section3Sub"],
       ['[data-mode="url"] span', "modeUrl"], ['[data-mode="text"] span', "modeText"], ['[data-mode="wifi"] span', "modeWifi"], ['[data-mode="email"] span', "modeEmail"], ['[data-mode="contact"] span', "modeContact"],
-      [".field-label .optional", "optional"], ['[data-overlay="none"]', "none"], ['[data-overlay="image"]', "image"], ['[data-overlay="text"]', "lettering"],
+      [".field-label .optional", "optional"], ['[data-overlay="none"]', "none"], ['[data-overlay="icon"]', "icon"], ['[data-overlay="image"]', "image"], ['[data-overlay="text"]', "lettering"],
       [".colors-row .field:first-child > span:first-child", "darkColor"], [".colors-row .field:last-child > span:first-child", "lightColor"],
       [".helper-note span", "helper"], [".preview-kicker", "previewKicker"], [".preview-head h2", "yourProject"],
       ['[data-preview="qr"]', "qrTab"], ['[data-preview="paper"]', "paperTab"], ['[data-preview="stand"]', "standTab"],
@@ -107,8 +115,13 @@
     const reset = $("resetBtn"); if (reset?.lastChild) reset.lastChild.textContent = " " + t("newProject");
     const live = q(".live-pill"); if (live?.lastChild) live.lastChild.textContent = " " + t("live");
     const captionLabel = $("caption")?.parentElement?.querySelector("span");
-    if (captionLabel) captionLabel.textContent = t("caption");
+    if (captionLabel) captionLabel.textContent = mode === "wifi" ? t("additionalCaption") : t("caption");
     $("caption").placeholder = t("captionPlaceholder");
+    const nfcText = q(".nfc-switch span");
+    if (nfcText) nfcText.innerHTML = `<strong>${t("nfcEnable")}</strong><small>${t("nfcSub")}</small>`;
+    const nfcLabels = [["#nfcPosition", "nfcPosition"], ["#nfcDiameter", "nfcDiameter"], ["#nfcThickness", "nfcThickness"]];
+    nfcLabels.forEach(([selector, key]) => { const el = q(selector)?.parentElement?.querySelector("span"); if (el) el.textContent = t(key); });
+    [...($("nfcPosition")?.options || [])].forEach(option => { option.textContent = t("nfc" + option.value[0].toUpperCase() + option.value.slice(1)); });
     const exports = [
       ["pngBtn","pngTitle","pngSub"], ["svgBtn","svgTitle","svgSub"], ["printBtn","printTitle","printSub"],
       ["plateBtn","plateTitle","plateSub"], ["baseBtn","baseTitle","baseSub"]
@@ -158,7 +171,7 @@
     const sections = {
       url: field(t("urlLabel"), "url", v.url, { type: "url", placeholder: t("urlPlaceholder") }) + `<p class="field-hint">${t("urlHint")}</p>`,
       text: field(t("textLabel"), "text", v.text, { multiline: true, placeholder: t("textPlaceholder") }),
-      wifi: field(t("ssidLabel"), "ssid", v.ssid, { placeholder: t("ssidPlaceholder") }) + '<div class="field-row">' + field(t("passwordLabel"), "password", v.password, { placeholder: t("passwordPlaceholder") }) + `<label class="field"><span>${t("securityLabel")}</span><select data-key="security"><option value="WPA">WPA / WPA2 / WPA3</option><option value="WEP">WEP</option><option value="nopass">${t("openNetwork")}</option></select></label></div><label class="checkbox-field"><input type="checkbox" data-key="hidden"> ${t("hiddenNetwork")}</label>`,
+      wifi: field(t("ssidLabel"), "ssid", v.ssid, { placeholder: t("ssidPlaceholder") }) + '<div class="field-row">' + field(t("passwordLabel"), "password", v.password, { placeholder: t("passwordPlaceholder") }) + `<label class="field"><span>${t("securityLabel")}</span><select data-key="security"><option value="WPA">WPA / WPA2 / WPA3</option><option value="WEP">WEP</option><option value="nopass">${t("openNetwork")}</option></select></label></div><label class="checkbox-field"><input type="checkbox" data-key="hidden"> ${t("hiddenNetwork")}</label><label class="checkbox-field wifi-details-switch"><input type="checkbox" data-key="showDetails"> ${t("wifiDetails")}</label><p class="field-hint wifi-details-hint">${t("wifiDetailsHint")}</p>`,
       email: field(t("emailLabel"), "email", v.email, { type: "email", placeholder: t("emailPlaceholder") }) + field(t("subjectLabel"), "subject", v.subject, { placeholder: t("subjectPlaceholder") }) + field(t("bodyLabel"), "body", v.body, { multiline: true, placeholder: t("bodyPlaceholder") }),
       contact: '<div class="field-row">' + field(t("nameLabel"), "name", v.name, { placeholder: t("namePlaceholder") }) + field(t("phoneLabel"), "phone", v.phone, { type: "tel", placeholder: t("phonePlaceholder") }) + '</div>' + field(t("emailLabel"), "email", v.email, { type: "email", placeholder: t("contactEmailPlaceholder") }) + field(t("orgLabel"), "organization", v.organization, { placeholder: t("optionalPlaceholder") })
     };
@@ -166,17 +179,27 @@
     if (mode === "wifi") {
       modeFields.querySelector('[data-key="security"]').value = v.security;
       modeFields.querySelector('[data-key="hidden"]').checked = v.hidden;
+      modeFields.querySelector('[data-key="showDetails"]').checked = v.showDetails;
     }
     modeFields.querySelectorAll("[data-key]").forEach(el => el.addEventListener(el.type === "checkbox" || el.tagName === "SELECT" ? "change" : "input", () => {
       values[mode][el.dataset.key] = el.type === "checkbox" ? el.checked : el.value;
       queueRender();
     }));
+    const captionLabel = $("caption")?.parentElement?.querySelector("span");
+    if (captionLabel) captionLabel.textContent = mode === "wifi" ? t("additionalCaption") : t("caption");
     queueRender();
   }
   function renderOverlayControls() {
     if (overlay === "image") {
       overlayControls.innerHTML = `<label class="upload-zone"><svg><use href="#i-image"/></svg><span><strong>${imageName ? escapeHtml(imageName) : t("chooseImage")}</strong><small>${t("imageHelp")}</small></span>${imageData ? `<img class="upload-thumb" src="${imageData}" alt="">` : ""}<input id="imageUpload" type="file" accept=".png,.jpg,.jpeg,.webp,.svg,image/png,image/jpeg,image/webp,image/svg+xml" aria-label="${t("chooseImage")}"></label>`;
       $("imageUpload").addEventListener("change", handleImage);
+    } else if (overlay === "icon") {
+      overlayControls.innerHTML = `<div class="icon-picker-label">${t("iconPicker")}</div><div class="icon-picker" role="group" aria-label="${t("iconPicker")}">${["wifi","home","nfc","radio","globe","phone","mail","link"].map(name => `<button type="button" class="icon-choice${selectedIcon === name ? " active" : ""}" data-icon="${name}" aria-pressed="${selectedIcon === name}"><svg><use href="#i-${name}"/></svg><span>${t("icon" + name[0].toUpperCase() + name.slice(1))}</span></button>`).join("")}</div>`;
+      overlayControls.querySelectorAll("[data-icon]").forEach(button => button.addEventListener("click", () => {
+        selectedIcon = button.dataset.icon;
+        overlayControls.querySelectorAll("[data-icon]").forEach(choice => { const active = choice === button; choice.classList.toggle("active", active); choice.setAttribute("aria-pressed", String(active)); });
+        queueRender();
+      }));
     } else if (overlay === "text") {
       overlayControls.innerHTML = field(t("overlayTextLabel"), "overlayText", window.overlayText || "QR", { maxlength: 12, placeholder: t("overlayTextPlaceholder") });
       overlayControls.querySelector("input").addEventListener("input", e => { window.overlayText = e.target.value; queueRender(); });
@@ -248,9 +271,41 @@
     return ["BEGIN:VCARD", "VERSION:3.0", `FN:${vcardEscape(v.name)}`, v.phone ? `TEL:${vcardEscape(v.phone)}` : "", v.email ? `EMAIL:${vcardEscape(v.email)}` : "", v.organization ? `ORG:${vcardEscape(v.organization)}` : "", "END:VCARD"].filter(Boolean).join("\r\n");
   }
   function queueRender() { clearTimeout(renderTimer); renderTimer = setTimeout(render, 80); }
+  function showWifiDetails() { return mode === "wifi" && values.wifi.showDetails; }
+  function displayLines() {
+    const lines=[];
+    if (showWifiDetails()) {
+      lines.push(`SSID: ${values.wifi.ssid}`);
+      lines.push(`${t("passwordLabel")}: ${values.wifi.security === "nopass" ? t("openPassword") : values.wifi.password}`);
+    }
+    const caption=$("caption").value.trim();
+    if (caption) lines.push(caption);
+    return lines;
+  }
+  function captionMarkup() { return displayLines().map((line,index)=>`<div class="caption-line${showWifiDetails()&&index<2?" wifi-line":""}">${escapeHtml(line)}</div>`).join(""); }
   function contrast(a, b) {
     const lum = hex => { const c = [1, 3, 5].map(i => parseInt(hex.slice(i, i + 2), 16) / 255).map(v => v <= .04045 ? v / 12.92 : ((v + .055) / 1.055) ** 2.4); return .2126 * c[0] + .7152 * c[1] + .0722 * c[2]; };
     const x = lum(a), y = lum(b); return (Math.max(x, y) + .05) / (Math.min(x, y) + .05);
+  }
+  function iconBits(name) {
+    const line = (x,y,x0,y0,x1,y1,w=1.45) => { const dx=x1-x0,dy=y1-y0,p=Math.max(0,Math.min(1,((x-x0)*dx+(y-y0)*dy)/(dx*dx+dy*dy))); return Math.hypot(x-x0-p*dx,y-y0-p*dy)<w; };
+    const ring = (x,y,cx,cy,r,w=1.45) => Math.abs(Math.hypot(x-cx,y-cy)-r)<w;
+    return Array.from({length:32},(_,row)=>Array.from({length:32},(_,col)=>{
+      const x=col+.5,y=row+.5;
+      if (name === "wifi") return ([18,13,8].some(r=>ring(x,y,16,29,r)&&y<27&&x>16-r&&x<16+r)) || Math.hypot(x-16,y-27)<2.5;
+      if (name === "home") return line(x,y,3,16,16,5)||line(x,y,16,5,29,16)||line(x,y,6,15,6,28)||line(x,y,26,15,26,28)||line(x,y,6,28,26,28)||line(x,y,13,28,13,21)||line(x,y,19,21,19,28)||line(x,y,13,21,19,21);
+      if (name === "nfc") return line(x,y,5,6,5,26)||line(x,y,5,6,17,26)||line(x,y,17,6,17,26)||([5,9].some(r=>ring(x,y,18,16,r)&&x>18));
+      if (name === "radio") return line(x,y,4,11,26,4)||line(x,y,4,12,28,12)||line(x,y,28,12,28,28)||line(x,y,28,28,4,28)||line(x,y,4,28,4,12)||ring(x,y,12,20,5)||line(x,y,20,18,25,18)||line(x,y,20,22,25,22);
+      if (name === "globe") return ring(x,y,16,16,12)||Math.abs(y-16)<1.4&&x>=4&&x<=28||Math.abs(x-16)<1.4&&y>=4&&y<=28||Math.abs(((x-16)/6)**2+((y-16)/12)**2-1)<.25;
+      if (name === "phone") return line(x,y,9,3,23,3)||line(x,y,23,3,23,29)||line(x,y,23,29,9,29)||line(x,y,9,29,9,3)||line(x,y,13,25,19,25);
+      if (name === "mail") return line(x,y,3,8,29,8)||line(x,y,29,8,29,25)||line(x,y,29,25,3,25)||line(x,y,3,25,3,8)||line(x,y,3,8,16,18)||line(x,y,16,18,29,8);
+      return ring(x,y,10,21,7)&&x<15||ring(x,y,22,11,7)&&x>17||line(x,y,11,21,22,11,2);
+    }));
+  }
+  function bitmapPath(bits, x=0, y=0, scale=1) {
+    let path="";
+    bits.forEach((row,ry)=>{ for(let start=-1,col=0;col<=row.length;col++) { const on=col<row.length&&row[col]; if(on&&start<0)start=col; if(!on&&start>=0){path+=`M${x+start*scale} ${y+ry*scale}h${(col-start)*scale}v${scale}h${-(col-start)*scale}z`;start=-1;} } });
+    return path;
   }
   function render() {
     try {
@@ -260,13 +315,14 @@
       $("qrPreview").innerHTML = qrSvg;
       $("paperQr").innerHTML = qrSvg;
       $("standQr").innerHTML = qrSvg;
-      const caption = $("caption").value.trim();
-      $("qrCaption").textContent = caption;
-      $("paperCaption").textContent = caption;
-      $("standCaption").textContent = caption;
+      ["qrCaption","paperCaption","standCaption"].forEach(id=>$(id).innerHTML=captionMarkup());
+      $("standNfc").hidden = !$("nfcEnabled").checked;
+      $("standNfc").innerHTML = $("nfcEnabled").checked ? `<svg viewBox="0 0 32 32" aria-label="NFC"><path fill="currentColor" d="${bitmapPath(iconBits("nfc"))}"/></svg><span>NFC</span>` : "";
       $("matrixSize").textContent = `${matrix.length} × ${matrix.length}`;
       const {width,height}=dimensions();
       $("standDimensions").textContent = t("standDimensions").replace("{width}", Math.round(width)).replace("{height}", Math.round(height)).replace("{base}", Math.round(width+10));
+      $("nfcOptions").hidden = !$("nfcEnabled").checked;
+      $("nfcPrintHint").textContent = t("nfcPause").replace("{z}", nfcGeometry().pauseZ.toFixed(1).replace(".", lang === "pl" ? "," : "."));
       $("modeMeta").textContent = t("mode" + mode[0].toUpperCase() + mode.slice(1));
       const lowContrast = contrast($("darkColor").value, $("lightColor").value) < 4.5;
       $("inputError").hidden = !lowContrast;
@@ -275,6 +331,7 @@
     } catch (err) {
       matrix = null; qrSvg = "";
       ["qrPreview", "paperQr", "standQr"].forEach(id => $(id).innerHTML = "");
+      ["qrCaption", "paperCaption", "standCaption"].forEach(id => $(id).innerHTML = "");
       $("matrixSize").textContent = "—";
       $("inputError").hidden = false;
       $("inputError").textContent = /overflow|Too long data/i.test(err.message) ? t("tooLong") : err.message;
@@ -287,7 +344,10 @@
     let path = "";
     for (let y = 0; y < n; y++) for (let x = 0; x < n; x++) if (modules[y][x]) path += `M${x + 4} ${y + 4}h1v1h-1z`;
     let mark = "";
-    if (overlay === "image" && imageData) {
+    if (overlay === "icon") {
+      const s=n*.235,p=(size-s)/2,inset=s*.13;
+      mark=`<rect x="${p}" y="${p}" width="${s}" height="${s}" rx="${s*.14}" fill="${light}"/><path fill="${dark}" d="${bitmapPath(iconBits(selectedIcon),p+inset,p+inset,(s-2*inset)/32)}"/>`;
+    } else if (overlay === "image" && imageData) {
       const s = n * .235, p = (size - s) / 2, inset = s * .12;
       mark = `<rect x="${p}" y="${p}" width="${s}" height="${s}" rx="${s * .14}" fill="${light}"/><image href="${imageData}" x="${p + inset}" y="${p + inset}" width="${s - 2 * inset}" height="${s - 2 * inset}" preserveAspectRatio="xMidYMid meet"/>`;
     } else if (overlay === "text" && (window.overlayText || "").trim()) {
@@ -302,10 +362,19 @@
     setTimeout(() => URL.revokeObjectURL(url), 1500);
   }
   function toast(message) { const el = $("toast"); el.textContent = message; el.classList.add("show"); clearTimeout(toastTimer); toastTimer = setTimeout(() => el.classList.remove("show"), 3200); }
-  function saveSvg() { if (!matrix) return; download(new Blob([qrSvg], { type: "image/svg+xml;charset=utf-8" }), "master-qr-maker.svg"); toast(t("svgSaved")); }
+  function exportSvg() {
+    if (!showWifiDetails()) return qrSvg;
+    const nested=qrSvg.replace("<svg ", '<svg x="220" y="40" width="1160" height="1160" ');
+    const lines=displayLines().map((line,index)=>{
+      const size=Math.max(24,48-Math.max(0,line.length-30)*.55);
+      return `<text x="800" y="${1280+index*105}" text-anchor="middle" fill="${$("darkColor").value}" font-family="Arial,sans-serif" font-weight="${index<2?700:600}" font-size="${size}">${escapeHtml(line)}</text>`;
+    }).join("");
+    return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 1600"><rect width="1600" height="1600" fill="${$("lightColor").value}"/>${nested}${lines}</svg>`;
+  }
+  function saveSvg() { if (!matrix) return; download(new Blob([exportSvg()], { type: "image/svg+xml;charset=utf-8" }), "master-qr-maker.svg"); toast(t("svgSaved")); }
   async function savePng() {
     if (!matrix) return;
-    const img = new Image(), url = URL.createObjectURL(new Blob([qrSvg], { type: "image/svg+xml;charset=utf-8" }));
+    const img = new Image(), url = URL.createObjectURL(new Blob([exportSvg()], { type: "image/svg+xml;charset=utf-8" }));
     try {
       img.src = url; await img.decode();
       const canvas = document.createElement("canvas"); canvas.width = canvas.height = 1600;
@@ -318,8 +387,8 @@
   }
   function printPage() {
     if (!matrix) return;
-    const caption = escapeHtml($("caption").value.trim());
-    const doc = `<!doctype html><html lang="${lang}"><head><meta charset="utf-8"><title>Master QR Maker — ${t("printDocument")}</title><style>@page{size:A4;margin:0}*{box-sizing:border-box}body{margin:0;font-family:Arial,sans-serif;color:#173556}.page{width:210mm;height:297mm;padding:20mm;position:relative;text-align:center}.bar{position:absolute;top:0;left:0;right:0;height:3mm;background:#2177dc}.brand{text-align:left;font-size:10pt;font-weight:bold;letter-spacing:2px;color:#7088a2}.content{margin-top:35mm}.over{font-size:9pt;color:#2177dc;letter-spacing:3px;font-weight:bold}h1{font-size:27pt;margin:7mm 0 15mm}.qr{width:110mm;height:110mm;margin:auto}.qr svg{width:100%;height:100%}.caption{font-size:14pt;font-weight:bold;margin:15mm 0}.foot{position:absolute;bottom:18mm;left:0;right:0;color:#9caec0;font-size:8pt}</style></head><body><div class="page"><div class="bar"></div><div class="brand">⌗ MASTER QR MAKER</div><div class="content"><div class="over">${t("paperOverline")}</div><h1>${t("scanQr")}</h1><div class="qr">${qrSvg}</div><div class="caption">${caption}</div></div><div class="foot">${t("printFooter")}</div></div><script>window.addEventListener('load',()=>setTimeout(()=>window.print(),300));<\/script></body></html>`;
+    const caption = displayLines().map(line=>`<div>${escapeHtml(line)}</div>`).join("");
+    const doc = `<!doctype html><html lang="${lang}"><head><meta charset="utf-8"><title>Master QR Maker — ${t("printDocument")}</title><style>@page{size:A4;margin:0}*{box-sizing:border-box}body{margin:0;font-family:Arial,sans-serif;color:#173556}.page{width:210mm;height:297mm;padding:20mm;position:relative;text-align:center}.bar{position:absolute;top:0;left:0;right:0;height:3mm;background:#2177dc}.brand{text-align:left;font-size:10pt;font-weight:bold;letter-spacing:2px;color:#7088a2}.content{margin-top:35mm}.over{font-size:9pt;color:#2177dc;letter-spacing:3px;font-weight:bold}h1{font-size:27pt;margin:7mm 0 15mm}.qr{width:110mm;height:110mm;margin:auto}.qr svg{width:100%;height:100%}.caption{font-size:13pt;font-weight:bold;margin:11mm 0;line-height:1.45;overflow-wrap:anywhere}.foot{position:absolute;bottom:18mm;left:0;right:0;color:#9caec0;font-size:8pt}</style></head><body><div class="page"><div class="bar"></div><div class="brand">⌗ MASTER QR MAKER</div><div class="content"><div class="over">${t("paperOverline")}</div><h1>${t("scanQr")}</h1><div class="qr">${qrSvg}</div><div class="caption">${caption}</div></div><div class="foot">${t("printFooter")}</div></div><script>window.addEventListener('load',()=>setTimeout(()=>window.print(),300));<\/script></body></html>`;
     const frame = document.createElement("iframe");
     frame.style.cssText = "position:fixed;width:1px;height:1px;opacity:0;pointer-events:none";
     document.body.append(frame);
@@ -337,6 +406,10 @@
     const a=[x0,y0,z0],b=[x1,y0,z0],c=[x1,y1,z0],d=[x0,y1,z0],e=[x0,y0,z1],f=[x1,y0,z1],g=[x1,y1,z1],h=[x0,y1,z1];
     addQuad(list,d,c,b,a); addQuad(list,e,f,g,h); addQuad(list,a,b,f,e); addQuad(list,b,c,g,f); addQuad(list,c,d,h,g); addQuad(list,d,a,e,h);
   }
+  function addVoidBox(list,x0,y0,z0,x1,y1,z1) {
+    const shell=[]; addBox(shell,x0,y0,z0,x1,y1,z1);
+    shell.forEach(([normal,a,b,c])=>list.push([normal.map(n=>-n),a,c,b]));
+  }
   function stlBlob(triangles) {
     const buf = new ArrayBuffer(84 + triangles.length * 50), view = new DataView(buf);
     const title = new TextEncoder().encode("Master QR Maker - 3D model");
@@ -350,8 +423,18 @@
   }
   function dimensions() {
     const qrMm = Math.max(76, (matrix.length + 8) * 1.2);
-    const width = qrMm + 24, height = qrMm + 48;
-    return { qrMm, width, height };
+    const nfc=$("nfcEnabled").checked, wifi=showWifiDetails();
+    const textStart=nfc?40:10, qrBottom=textStart+(wifi?32:17)+9;
+    const width = qrMm + 24, height = qrMm + qrBottom + 12;
+    return { qrMm, width, height, textStart, qrBottom, plateZ:nfc?4:3 };
+  }
+  function nfcGeometry() {
+    const diameter=Math.max(15,Math.min(30,Number($("nfcDiameter").value)||25));
+    const thickness=Math.max(.2,Math.min(1.2,Number($("nfcThickness").value)||.4));
+    const {width,qrMm,textStart,qrBottom}=dimensions();
+    const position=$("nfcPosition").value;
+    const centerY=position==="caption"?textStart+8:position==="symbol"?20:qrBottom+qrMm/2;
+    return {centerX:width/2,centerY,size:diameter+1.2,pauseZ:1.2+thickness+.4,diameter,thickness};
   }
   function addRasterText(list, text, x, y, width, height, z, depth) {
     if (!text) return;
@@ -373,6 +456,7 @@
     }
   }
   function markBitmap() {
+    if (overlay === "icon") return iconBits(selectedIcon);
     const canvas = document.createElement("canvas"); canvas.width = canvas.height = 32;
     const ctx = canvas.getContext("2d");
     if (overlay === "image" && overlayImg) ctx.drawImage(overlayImg, 2, 2, 28, 28);
@@ -387,24 +471,36 @@
     }));
   }
   function makePlate() {
-    const tris=[], {qrMm,width,height}=dimensions(), n=matrix.length, unit=qrMm/(n+8), left=12, bottom=36;
-    addBox(tris,0,0,0,width,height,3);
+    const tris=[], {qrMm,width,height,qrBottom,textStart,plateZ}=dimensions(), n=matrix.length, unit=qrMm/(n+8), left=12, bottom=qrBottom;
+    addBox(tris,0,0,0,width,height,plateZ);
+    if ($("nfcEnabled").checked) {
+      const {centerX,centerY,size,pauseZ}=nfcGeometry(), half=size/2;
+      addVoidBox(tris,centerX-half,centerY-half,1.2,centerX+half,centerY+half,pauseZ);
+    }
     const patchSize=n*.235, p0=(n-patchSize)/2, p1=(n+patchSize)/2;
     for (let y=0;y<n;y++) for(let x=0;x<n;x++) {
       if(!matrix[y][x])continue;
-      if(overlay!=="none" && ((overlay==="image" && imageData) || (overlay==="text" && (window.overlayText||"").trim())) && x>=p0&&x<p1&&y>=p0&&y<p1)continue;
+      if(overlay!=="none" && ((overlay==="image" && imageData) || overlay==="icon" || (overlay==="text" && (window.overlayText||"").trim())) && x>=p0&&x<p1&&y>=p0&&y<p1)continue;
       const xx=left+(x+4)*unit, yy=bottom+(n+3-y)*unit;
-      addBox(tris,xx,yy,3,xx+unit,yy+unit,3.8);
+      addBox(tris,xx,yy,plateZ,xx+unit,yy+unit,plateZ+.8);
     }
-    if (overlay !== "none" && ((overlay==="image" && imageData) || (overlay==="text" && (window.overlayText||"").trim()))) {
+    if (overlay !== "none" && ((overlay==="image" && imageData) || overlay==="icon" || (overlay==="text" && (window.overlayText||"").trim()))) {
       const s=qrMm*.235, x0=left+(qrMm-s)/2, y0=bottom+(qrMm-s)/2, bits=markBitmap(), pixel=s/32;
-      for(let row=0;row<32;row++)for(let col=0;col<32;col++)if(bits[row][col])addBox(tris,x0+col*pixel,y0+(31-row)*pixel,3,x0+(col+1)*pixel,y0+(32-row)*pixel,3.8);
+      for(let row=0;row<32;row++)for(let col=0;col<32;col++)if(bits[row][col])addBox(tris,x0+col*pixel,y0+(31-row)*pixel,plateZ,x0+(col+1)*pixel,y0+(32-row)*pixel,plateZ+.8);
     }
-    addRasterText(tris,$("caption").value.trim(),10,11,width-20,17,3,.8);
+    if (showWifiDetails()) {
+      addRasterText(tris,`SSID: ${values.wifi.ssid}`,10,textStart+22,width-20,10,plateZ,.8);
+      addRasterText(tris,`${t("passwordLabel")}: ${values.wifi.security==="nopass"?t("openPassword"):values.wifi.password}`,10,textStart+11,width-20,10,plateZ,.8);
+      addRasterText(tris,$("caption").value.trim(),10,textStart,width-20,10,plateZ,.8);
+    } else addRasterText(tris,$("caption").value.trim(),10,textStart+1,width-20,17,plateZ,.8);
+    if ($("nfcEnabled").checked) {
+      const bits=iconBits("nfc"),size=20,pixel=size/32,x0=(width-size)/2,y0=10;
+      for(let row=0;row<32;row++)for(let col=0;col<32;col++)if(bits[row][col])addBox(tris,x0+col*pixel,y0+(31-row)*pixel,plateZ,x0+(col+1)*pixel,y0+(32-row)*pixel,plateZ+.8);
+    }
     return stlBlob(tris);
   }
   function makeBase() {
-    const tris=[],{width}=dimensions(), bw=width+10, depth=45, slot=3.4, center=depth/2;
+    const tris=[],{width,plateZ}=dimensions(), bw=width+10, depth=45, slot=plateZ+.4, center=depth/2;
     addBox(tris,0,0,0,bw,depth,4);
     addBox(tris,3,center-slot/2-5,4,bw-3,center-slot/2,14);
     addBox(tris,3,center+slot/2,4,bw-3,center+slot/2+5,14);
@@ -456,13 +552,21 @@
   if (["studio", "personalizacja", "eksport"].includes(window.location?.hash?.slice(1))) setNavActive(window.location.hash.slice(1));
   ["darkColor","lightColor"].forEach(id => $(id).addEventListener("input", () => { $(id==="darkColor"?"darkHex":"lightHex").textContent=$(id).value.toUpperCase(); queueRender(); }));
   $("caption").addEventListener("input", queueRender);
+  $("nfcEnabled").addEventListener("change", () => { $("nfcOptions").hidden=!$("nfcEnabled").checked; queueRender(); });
+  $("nfcPosition").addEventListener("change", queueRender);
+  ["nfcDiameter","nfcThickness"].forEach(id => $(id).addEventListener("change", () => {
+    const input=$(id),number=Number(input.value),min=Number(input.min),max=Number(input.max);
+    input.value=String(Math.max(min,Math.min(max,Number.isFinite(number)&&number?number:Number(input.defaultValue))));
+    queueRender();
+  }));
   $("svgBtn").addEventListener("click", saveSvg);
   $("pngBtn").addEventListener("click", savePng);
   $("printBtn").addEventListener("click", printPage);
   $("plateBtn").addEventListener("click", savePlate);
   $("baseBtn").addEventListener("click", saveBase);
   $("resetBtn").addEventListener("click", () => {
-    values=makeDefaults(lang); mode="url"; overlay="none"; imageData=""; imageName=""; overlayImg=null; window.overlayText="QR";
+    values=makeDefaults(lang); mode="url"; overlay="none"; selectedIcon="wifi"; imageData=""; imageName=""; overlayImg=null; window.overlayText="QR";
+    $("nfcEnabled").checked=false; $("nfcOptions").hidden=true; $("nfcPosition").value="qr"; $("nfcDiameter").value="25"; $("nfcThickness").value="0.4";
     $("darkColor").value="#173556"; $("lightColor").value="#ffffff"; $("darkHex").textContent="#173556"; $("lightHex").textContent="#FFFFFF";
     $("caption").value=t("defaultCaption");
     document.querySelectorAll(".type-option").forEach(b=>{b.classList.toggle("active",b.dataset.mode==="url");b.setAttribute("aria-pressed",String(b.dataset.mode==="url"));});

@@ -19,6 +19,11 @@
     <symbol id="i-link" viewBox="0 0 24 24"><path d="M10 13a5 5 0 0 0 7.5.5l3-3a5 5 0 0 0-7-7l-1.7 1.7M14 11a5 5 0 0 0-7.5-.5l-3 3a5 5 0 0 0 7 7l1.7-1.7"/></symbol>
     <symbol id="i-type" viewBox="0 0 24 24"><path d="M4 6V4h16v2M12 4v16m-4 0h8"/></symbol>
     <symbol id="i-wifi" viewBox="0 0 24 24"><path d="M2 8a16 16 0 0 1 20 0M5 12a11 11 0 0 1 14 0M8.5 16a6 6 0 0 1 7 0M12 20h.01"/></symbol>
+    <symbol id="i-home" viewBox="0 0 24 24"><path d="m3 11 9-8 9 8M5 10v11h14V10M10 21v-7h4v7"/></symbol>
+    <symbol id="i-nfc" viewBox="0 0 24 24"><path d="M3 5v14M7 7v10M7 7l7 10M14 7v10M17 6a9 9 0 0 1 0 12M20 3a13 13 0 0 1 0 18"/></symbol>
+    <symbol id="i-radio" viewBox="0 0 24 24"><path d="M4 9 17 4M4 9h16a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2v-8a2 2 0 0 1 2-2Z"/><circle cx="8" cy="15" r="3"/><path d="M15 14h4M15 17h4"/></symbol>
+    <symbol id="i-globe" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a15 15 0 0 1 0 18M12 3a15 15 0 0 0 0 18"/></symbol>
+    <symbol id="i-phone" viewBox="0 0 24 24"><rect x="6" y="2" width="12" height="20" rx="2"/><path d="M10 18h4"/></symbol>
     <symbol id="i-mail" viewBox="0 0 24 24"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m3 6 9 7 9-7"/></symbol>
     <symbol id="i-user" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></symbol>
     <symbol id="i-image" viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="18" rx="2"/><circle cx="8" cy="9" r="2"/><path d="m3 18 5-5 4 4 4-5 5 6"/></symbol>
@@ -66,12 +71,21 @@
                 <div class="field-label">Znak w centrum kodu <span class="optional">opcjonalnie</span></div>
                 <div class="segmented" role="group" aria-label="Rodzaj znaku">
                   <button class="segment active" type="button" data-overlay="none">Bez znaku</button>
+                  <button class="segment" type="button" data-overlay="icon">Ikona</button>
                   <button class="segment" type="button" data-overlay="image">Obraz</button>
                   <button class="segment" type="button" data-overlay="text">Napis</button>
                 </div>
                 <div id="overlayControls"></div>
                 <div class="field-row colors-row"><label class="field"><span>Kolor kodu</span><span class="color-control"><input id="darkColor" type="color" value="#173556" aria-label="Kolor kodu"><code id="darkHex">#173556</code></span></label><label class="field"><span>Tło kodu</span><span class="color-control"><input id="lightColor" type="color" value="#ffffff" aria-label="Kolor tła"><code id="lightHex">#FFFFFF</code></span></label></div>
                 <label class="field"><span>Podpis pod kodem</span><input id="caption" type="text" maxlength="64" value="Zeskanuj i odkryj więcej" placeholder="Np. Zeskanuj, aby otworzyć menu"></label>
+                <div class="nfc-card">
+                  <label class="checkbox-field nfc-switch"><input id="nfcEnabled" type="checkbox"><span><strong>Dodaj NFC do stojaka 3D</strong><small>Kieszeń na naklejkę i wypukły symbol NFC</small></span></label>
+                  <div id="nfcOptions" class="nfc-options" hidden>
+                    <label class="field"><span>Położenie naklejki</span><select id="nfcPosition"><option value="qr">Za kodem QR</option><option value="caption">Za podpisem</option><option value="symbol">Za symbolem NFC</option></select></label>
+                    <div class="field-row"><label class="field"><span>Średnica naklejki (mm)</span><input id="nfcDiameter" type="number" min="15" max="30" step="1" value="25"></label><label class="field"><span>Grubość naklejki (mm)</span><input id="nfcThickness" type="number" min="0.2" max="1.2" step="0.1" value="0.4"></label></div>
+                    <p class="field-hint" id="nfcPrintHint"></p>
+                  </div>
+                </div>
                 <div class="helper-note"><svg><use href="#i-info"/></svg><span>Środek kodu ma ograniczony rozmiar. Przed drukiem zeskanuj gotowy projekt telefonem.</span></div>
               </div>
             </div>
@@ -87,8 +101,8 @@
               <div class="preview-tabs" role="tablist" aria-label="Rodzaj podglądu"><button type="button" role="tab" class="preview-tab active" aria-selected="true" data-preview="qr">Kod QR</button><button type="button" role="tab" class="preview-tab" aria-selected="false" data-preview="paper">Kartka A4</button><button type="button" role="tab" class="preview-tab" aria-selected="false" data-preview="stand">Stojak 3D</button></div>
               <div class="preview-stage">
                 <div class="preview-view active" id="qrView"><div class="qr-presentation"><div id="qrPreview" class="qr-preview"></div><div id="qrCaption" class="qr-caption"></div></div></div>
-                <div class="preview-view" id="paperView"><div class="paper-sheet"><div class="paper-topline"></div><div class="paper-logo"><span class="paper-logo-mark">⌗</span> MASTER QR MAKER</div><div class="paper-center"><div class="paper-overline">POŁĄCZ SIĘ Z NAMI</div><h3 id="paperTitle">Zeskanuj kod QR</h3><div id="paperQr" class="paper-qr"></div><p id="paperCaption">Zeskanuj i odkryj więcej</p></div><div class="paper-footer">Master QR Maker</div></div></div>
-                <div class="preview-view" id="standView"><div class="stand-scene"><div class="stand-shadow"></div><div class="stand-plaque"><div id="standQr" class="stand-qr"></div><div id="standCaption" class="stand-caption"></div></div><div class="stand-foot"></div></div><div id="standDimensions" class="stand-caption-note">Podgląd poglądowy • płytka 100 mm + stopka 110 mm</div></div>
+                <div class="preview-view" id="paperView"><div class="paper-sheet"><div class="paper-topline"></div><div class="paper-logo"><span class="paper-logo-mark">⌗</span> MASTER QR MAKER</div><div class="paper-center"><div class="paper-overline">POŁĄCZ SIĘ Z NAMI</div><h3 id="paperTitle">Zeskanuj kod QR</h3><div id="paperQr" class="paper-qr"></div><div id="paperCaption">Zeskanuj i odkryj więcej</div></div><div class="paper-footer">Master QR Maker</div></div></div>
+                <div class="preview-view" id="standView"><div class="stand-scene"><div class="stand-shadow"></div><div class="stand-plaque"><div id="standQr" class="stand-qr"></div><div id="standCaption" class="stand-caption"></div><div id="standNfc" class="stand-nfc" hidden></div></div><div class="stand-foot"></div></div><div id="standDimensions" class="stand-caption-note">Podgląd poglądowy • płytka 100 mm + stopka 110 mm</div></div>
               </div>
               <div class="preview-meta"><div><span>ROZMIAR MATRYCY</span><strong id="matrixSize">—</strong></div><div><span>KOREKCJA BŁĘDÓW</span><strong>Wysoka · H</strong></div><div><span>TYP KODU</span><strong id="modeMeta">Link</strong></div></div>
             </div>

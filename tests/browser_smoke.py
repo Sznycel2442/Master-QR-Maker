@@ -3,6 +3,7 @@ from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from threading import Thread
 from tempfile import TemporaryDirectory
+import struct
 from playwright.sync_api import sync_playwright
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -61,11 +62,80 @@ try:
         assert page.locator("#qrPreview path").evaluate("(el) => getComputedStyle(el).stroke") == "none"
 
         page.locator('[data-mode="wifi"]').click()
+        page.locator('[data-key="ssid"]').fill("Studio Wi-Fi")
         page.locator('[data-key="password"]').fill("Test12345")
         page.locator("#qrPreview svg").wait_for()
         assert page.locator("#inputError").is_hidden()
+        page.locator('[data-key="showDetails"]').check()
+        page.locator("#caption").fill("Welcome inside")
+        page.wait_for_function("document.querySelectorAll('#qrCaption .caption-line').length === 3")
+        assert page.locator("#qrCaption").inner_text().splitlines() == ["SSID: Studio Wi-Fi", "Hasło: Test12345", "Welcome inside"]
+        assert page.locator("#paperCaption").inner_text().count("Test12345") == 1
+        with page.expect_download() as event:
+            page.locator("#svgBtn").click()
+        wifi_svg = Path(directory) / "wifi-details.svg"
+        event.value.save_as(wifi_svg)
+        assert "Studio Wi-Fi" in wifi_svg.read_text(encoding="utf-8")
+        assert "Test12345" in wifi_svg.read_text(encoding="utf-8")
+        page.locator("#printBtn").click()
+        assert "Studio Wi-Fi" in page.locator("iframe").last.get_attribute("srcdoc")
+        assert "Test12345" in page.locator("iframe").last.get_attribute("srcdoc")
+
+        page.locator("#nfcEnabled").check()
+        assert page.locator("#nfcOptions").is_visible()
+        page.locator("#nfcThickness").fill("0.7")
+        page.locator("#nfcThickness").blur()
+        page.wait_for_function("document.querySelector('#nfcPrintHint').textContent.includes('2,3')")
+        assert page.locator("#standNfc").inner_text() == "NFC"
+        pocket_centers = {}
+        for position in ["qr", "caption", "symbol"]:
+            page.locator("#nfcPosition").select_option(position)
+            if position == "caption":
+                page.locator("#nfcDiameter").fill("28")
+                page.locator("#nfcDiameter").press("Tab")
+            if position == "symbol":
+                page.locator("#nfcDiameter").fill("25")
+                page.locator("#nfcDiameter").press("Tab")
+            with page.expect_download() as event:
+                page.locator("#plateBtn").click()
+            data = (Path(directory) / f"nfc-{position}.stl")
+            event.value.save_as(data)
+            vertices = []
+            raw = data.read_bytes()
+            cavity_volume = 0
+            for offset in range(84, len(raw), 50):
+                triangle = struct.unpack_from("<12fH", raw, offset)
+                points = [(triangle[i], triangle[i + 1], triangle[i + 2]) for i in (3, 6, 9)]
+                if all(1 < point[2] < 3 for point in points):
+                    a, b, c = points
+                    cavity_volume += (a[0] * (b[1] * c[2] - b[2] * c[1]) + a[1] * (b[2] * c[0] - b[0] * c[2]) + a[2] * (b[0] * c[1] - b[1] * c[0])) / 6
+                for i in (3, 6, 9):
+                    if 1 < triangle[i + 2] < 3:
+                        vertices.append((triangle[i], triangle[i + 1], triangle[i + 2]))
+            assert vertices, f"Missing NFC cavity: {position}"
+            expected_size = 29.2 if position == "caption" else 26.2
+            assert abs(max(v[0] for v in vertices) - min(v[0] for v in vertices) - expected_size) < .02
+            assert any(abs(v[2] - 2.3) < .001 for v in vertices)
+            assert cavity_volume < -100, f"NFC shell does not form a negative volume: {position}"
+            pocket_centers[position] = (max(v[1] for v in vertices) + min(v[1] for v in vertices)) / 2
+        assert pocket_centers["qr"] > pocket_centers["caption"] > pocket_centers["symbol"]
+        page.locator('[data-preview="stand"]').click()
+        page.screenshot(path=str(ROOT / "preview-features.png"), full_page=True)
+        page.locator('[data-preview="qr"]').click()
+        page.locator("#nfcEnabled").uncheck()
 
         page.locator('[data-mode="url"]').click()
+        page.locator('[data-overlay="icon"]').click()
+        page.wait_for_function("document.querySelectorAll('#qrPreview svg path').length >= 2")
+        for icon in ["wifi", "home", "nfc", "radio", "globe", "phone", "mail", "link"]:
+            page.locator(f'[data-icon="{icon}"]').click()
+            assert page.locator(f'[data-icon="{icon}"]').get_attribute("aria-pressed") == "true"
+            assert page.locator("#qrPreview svg path").count() >= 2
+        with page.expect_download() as event:
+            page.locator("#plateBtn").click()
+        icon_plate = Path(directory) / "icon-plaque.stl"
+        event.value.save_as(icon_plate)
+        assert icon_plate.stat().st_size > 10000
         page.locator('[data-overlay="text"]').click()
         page.locator('[data-key="overlayText"]').fill("MENU")
         assert page.locator("#qrPreview text").text_content() == "MENU"

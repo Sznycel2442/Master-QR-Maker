@@ -4,6 +4,8 @@ Lokalna aplikacja do projektowania kodów QR, wydruków A4 i stojaków do druku 
 
 Krótka instrukcja po polsku i angielsku: [manual.md](manual.md).
 
+![Podgląd Master QR Maker](preview.png)
+
 ## Uruchomienie
 
 Otwórz `index.html` w aktualnej przeglądarce. Jeśli przeglądarka ogranicza pobieranie plików ze stron `file://`, uruchom lokalny serwer w katalogu projektu:
@@ -18,14 +20,19 @@ Następnie otwórz `http://127.0.0.1:8765`. Serwer nasłuchuje tylko na Twoim ko
 
 - Tryby: link, tekst, Wi-Fi, e-mail i kontakt vCard.
 - Interfejs po polsku i angielsku; przełącznik PL/EN znajduje się w prawym górnym rogu.
-- Własne kolory, podpis oraz znak w centrum kodu: tekst albo plik PNG, JPG, WEBP lub SVG. Obrazy są lokalnie zmniejszane i osadzane w pliku wynikowym.
+- Własne kolory, podpis oraz znak w centrum kodu: tekst, gotowa ikona (Wi-Fi, dom, NFC, radio i inne) albo plik PNG, JPG, WEBP lub SVG. Obrazy są lokalnie zmniejszane i osadzane w pliku wynikowym.
+- Opcjonalne linie SSID i hasła pod kodem Wi-Fi oraz dodatkowy napis. Układ trafia do podglądu, PNG, SVG, A4 i modelu 3D.
 - Podgląd kodu, kartki A4 i stojaka.
 - Eksport PNG 1600 × 1600 px, SVG oraz wydruk A4.
-- Dwa pliki STL: płytka z wypukłym kodem i podpisem oraz stopka ze szczeliną.
+- Dwa pliki STL: płytka z wypukłym kodem i podpisem oraz stopka ze szczeliną. Opcjonalnie płytka ma zamkniętą kieszeń na naklejkę NFC i wypukły symbol.
+
+Przykład układu Wi-Fi i NFC: [podgląd nowych opcji](preview-features.png).
 
 ## Druk 3D
 
-Płytkę drukuj płasko, kodem do góry. Grubość płytki to 3 mm; kod i podpis wystają o 0,8 mm. Stopka ma szczelinę 3,4 mm, aby pomieścić płytkę. Wymiary płytki rosną wraz z gęstością kodu, tak aby szerokość pojedynczego modułu wynosiła co najmniej 1,2 mm. Sprawdź wymiary pod podglądem i dopasuj je do pola roboczego drukarki.
+Płytkę drukuj płasko, kodem do góry. Bez NFC grubość płytki to 3 mm; z NFC 4 mm. Kod, napis i symbol NFC wystają o 0,8 mm. Szczelina stopki jest dopasowana do wybranej grubości. Wymiary płytki rosną wraz z gęstością kodu, tak aby szerokość pojedynczego modułu wynosiła co najmniej 1,2 mm. Sprawdź wymiary pod podglądem i dopasuj je do pola roboczego drukarki.
+
+Po włączeniu NFC wybierz miejsce naklejki: za kodem QR, za podpisem albo za symbolem NFC. Wpisz rzeczywistą średnicę (15–30 mm) i grubość (0,2–1,2 mm) naklejki. Kieszeń jest kwadratowa i ma 1,2 mm luzu względem średnicy. Naklejkę zaprogramuj osobno. W slicerze obejrzyj przekrój modelu i ustaw pauzę tuż przed pierwszą warstwą zamykającą kieszeń; sugerowaną wysokość Z pokazuje interfejs. Włóż naklejkę, upewnij się, że nie wystaje ponad kieszeń, i wznów druk. Wydrukuj próbkę przed wykonaniem większej serii.
 
 Kontrast ma znaczenie: dla skanowalnego modelu zastosuj zmianę filamentu na warstwie wypukłych modułów lub pomaluj je ciemnym kolorem na jasnym tle. Obraz w centrum modelu jest progowany do dwukolorowej mozaiki. Drobne szczegóły zdjęcia mogą zniknąć. Przed drukiem seryjnym wydrukuj próbkę i zeskanuj ją telefonem. Eksport STL zawiera stykające się bryły; w slicerze włącz scalanie nakładających się objętości, jeśli program o to pyta.
 

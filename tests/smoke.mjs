@@ -34,16 +34,20 @@ class Element {
 
 const ids = ["modeFields", "overlayControls", "darkColor", "lightColor", "darkHex", "lightHex",
   "caption", "qrPreview", "paperQr", "standQr", "qrCaption", "paperCaption", "standCaption",
+  "standNfc", "nfcEnabled", "nfcOptions", "nfcPosition", "nfcDiameter", "nfcThickness", "nfcPrintHint",
   "matrixSize", "modeMeta", "standDimensions", "inputError", "pngBtn", "svgBtn", "printBtn",
   "plateBtn", "baseBtn", "resetBtn", "toast"];
 const elements = new Map(ids.map(id => [id, new Element(id)]));
 elements.get("darkColor").value = "#173556";
 elements.get("lightColor").value = "#ffffff";
 elements.get("caption").value = "Zeskanuj i odkryj więcej";
+elements.get("nfcPosition").value = "qr";
+elements.get("nfcDiameter").value = "25";
+elements.get("nfcThickness").value = "0.4";
 const buttons = ["url", "text", "wifi", "email", "contact"].map(mode => {
   const button = new Element(); button.dataset.mode = mode; return button;
 });
-const segments = ["none", "image", "text"].map(overlay => {
+const segments = ["none", "icon", "image", "text"].map(overlay => {
   const button = new Element(); button.dataset.overlay = overlay; return button;
 });
 const tabs = ["qr", "paper", "stand"].map(preview => {
@@ -92,8 +96,10 @@ const password = elements.get("modeFields").inputs.find(input => input.dataset.k
 password.value = "Test12345"; password.listeners.input({ target: password }); await pause();
 assert(/\d+ × \d+/.test(elements.get("matrixSize").textContent), "Wi-Fi QR missing");
 buttons[0].click(); await pause();
-segments[2].click(); await pause();
+segments[3].click(); await pause();
 assert(elements.get("qrPreview").innerHTML.includes("<text"), "Center text missing");
+segments[1].click(); await pause();
+assert(elements.get("qrPreview").innerHTML.includes("<path fill="), "Built-in icon missing");
 segments[0].click(); await pause();
 elements.get("svgBtn").click();
 elements.get("plateBtn").click();
