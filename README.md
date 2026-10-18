@@ -27,6 +27,7 @@ Następnie otwórz `http://127.0.0.1:8765`. Serwer nasłuchuje tylko na Twoim ko
 - Dwa pliki STL: płytka z wypukłym kodem i podpisem oraz stopka ze szczeliną. Opcjonalnie płytka ma zamkniętą kieszeń na naklejkę NFC i wypukły symbol.
 
 Przykład układu Wi-Fi i NFC: [podgląd nowych opcji](preview-features.png).
+Wybór ikon Font Awesome: [podgląd selektora](preview-icons.png).
 
 ## Druk 3D
 
@@ -43,3 +44,5 @@ Strona nie zapisuje wprowadzonych danych i niczego nie wysyła do internetu. Lok
 ## Biblioteka
 
 Generator matrycy QR korzysta z lokalnie dołączonego [QRCode.js](https://github.com/davidshimjs/qrcodejs) (MIT). Dodano metodę zwracającą samą matrycę na potrzeby eksportu. Informacja licencyjna znajduje się w `vendor/LICENSE`.
+
+Ikony interfejsu i siedem ikon do środka kodu pochodzą z [Font Awesome Free Solid](https://github.com/FortAwesome/Font-Awesome). Ich lokalne pliki źródłowe, atrybucja i licencja CC BY 4.0 są w `vendor/fontawesome/`. Symbol NFC jest własnym rysunkiem, ponieważ oficjalny symbol NFC Font Awesome wymaga licencji Pro. Wybrane ścieżki SVG są osadzone w `index.html`, aby strona działała bez sieci.

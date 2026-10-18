@@ -127,10 +127,24 @@ try:
         page.locator('[data-mode="url"]').click()
         page.locator('[data-overlay="icon"]').click()
         page.wait_for_function("document.querySelectorAll('#qrPreview svg path').length >= 2")
+        assert page.locator("#qrPreview svg path").last.get_attribute("d") == page.locator("#i-wifi path").get_attribute("d")
         for icon in ["wifi", "home", "nfc", "radio", "globe", "phone", "mail", "link"]:
             page.locator(f'[data-icon="{icon}"]').click()
             assert page.locator(f'[data-icon="{icon}"]').get_attribute("aria-pressed") == "true"
             assert page.locator("#qrPreview svg path").count() >= 2
+        page.locator('[data-icon="radio"]').click()
+        page.wait_for_function("document.querySelector('#qrPreview svg path:last-of-type')?.getAttribute('d') === document.querySelector('#i-radio path')?.getAttribute('d')")
+        page.screenshot(path=str(ROOT / "preview-icons.png"), full_page=True)
+        with page.expect_download() as event:
+            page.locator("#svgBtn").click()
+        fa_svg = Path(directory) / "fontawesome-radio.svg"
+        event.value.save_as(fa_svg)
+        assert page.locator("#i-radio path").get_attribute("d") in fa_svg.read_text(encoding="utf-8")
+        with page.expect_download() as event:
+            page.locator("#pngBtn").click()
+        fa_png = Path(directory) / "fontawesome-radio.png"
+        event.value.save_as(fa_png)
+        assert fa_png.read_bytes().startswith(b"\x89PNG\r\n\x1a\n")
         with page.expect_download() as event:
             page.locator("#plateBtn").click()
         icon_plate = Path(directory) / "icon-plaque.stl"

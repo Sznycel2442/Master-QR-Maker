@@ -194,7 +194,7 @@
       overlayControls.innerHTML = `<label class="upload-zone"><svg><use href="#i-image"/></svg><span><strong>${imageName ? escapeHtml(imageName) : t("chooseImage")}</strong><small>${t("imageHelp")}</small></span>${imageData ? `<img class="upload-thumb" src="${imageData}" alt="">` : ""}<input id="imageUpload" type="file" accept=".png,.jpg,.jpeg,.webp,.svg,image/png,image/jpeg,image/webp,image/svg+xml" aria-label="${t("chooseImage")}"></label>`;
       $("imageUpload").addEventListener("change", handleImage);
     } else if (overlay === "icon") {
-      overlayControls.innerHTML = `<div class="icon-picker-label">${t("iconPicker")}</div><div class="icon-picker" role="group" aria-label="${t("iconPicker")}">${["wifi","home","nfc","radio","globe","phone","mail","link"].map(name => `<button type="button" class="icon-choice${selectedIcon === name ? " active" : ""}" data-icon="${name}" aria-pressed="${selectedIcon === name}"><svg><use href="#i-${name}"/></svg><span>${t("icon" + name[0].toUpperCase() + name.slice(1))}</span></button>`).join("")}</div>`;
+      overlayControls.innerHTML = `<div class="icon-picker-label">${t("iconPicker")}</div><div class="icon-picker" role="group" aria-label="${t("iconPicker")}">${["wifi","home","nfc","radio","globe","phone","mail","link"].map(name => `<button type="button" class="icon-choice${selectedIcon === name ? " active" : ""}" data-icon="${name}" aria-pressed="${selectedIcon === name}">${builtinIconSvg(name)}<span>${t("icon" + name[0].toUpperCase() + name.slice(1))}</span></button>`).join("")}</div>`;
       overlayControls.querySelectorAll("[data-icon]").forEach(button => button.addEventListener("click", () => {
         selectedIcon = button.dataset.icon;
         overlayControls.querySelectorAll("[data-icon]").forEach(choice => { const active = choice === button; choice.classList.toggle("active", active); choice.setAttribute("aria-pressed", String(active)); });
@@ -307,6 +307,17 @@
     bits.forEach((row,ry)=>{ for(let start=-1,col=0;col<=row.length;col++) { const on=col<row.length&&row[col]; if(on&&start<0)start=col; if(!on&&start>=0){path+=`M${x+start*scale} ${y+ry*scale}h${(col-start)*scale}v${scale}h${-(col-start)*scale}z`;start=-1;} } });
     return path;
   }
+  function builtinIcon(name) {
+    if (name !== "nfc") {
+      const symbol=$("i-"+name), path=symbol?.querySelector?.("path");
+      if (path) return {viewBox:symbol.getAttribute("viewBox"),path:path.getAttribute("d"),fontAwesome:true};
+    }
+    return {viewBox:"0 0 32 32",path:bitmapPath(iconBits(name)),fontAwesome:false};
+  }
+  function builtinIconSvg(name) {
+    const icon=builtinIcon(name);
+    return `<svg viewBox="${icon.viewBox}" aria-hidden="true"><path fill="currentColor" stroke="none" d="${icon.path}"/></svg>`;
+  }
   function render() {
     try {
       const data = payload();
@@ -345,8 +356,10 @@
     for (let y = 0; y < n; y++) for (let x = 0; x < n; x++) if (modules[y][x]) path += `M${x + 4} ${y + 4}h1v1h-1z`;
     let mark = "";
     if (overlay === "icon") {
-      const s=n*.235,p=(size-s)/2,inset=s*.13;
-      mark=`<rect x="${p}" y="${p}" width="${s}" height="${s}" rx="${s*.14}" fill="${light}"/><path fill="${dark}" d="${bitmapPath(iconBits(selectedIcon),p+inset,p+inset,(s-2*inset)/32)}"/>`;
+      const s=n*.235,p=(size-s)/2,inset=s*.13,icon=builtinIcon(selectedIcon);
+      const [, , w, h]=icon.viewBox.split(/\s+/).map(Number), target=s-2*inset, scale=Math.min(target/w,target/h);
+      const x=p+inset+(target-w*scale)/2,y=p+inset+(target-h*scale)/2;
+      mark=`<rect x="${p}" y="${p}" width="${s}" height="${s}" rx="${s*.14}" fill="${light}"/><path fill="${dark}" transform="translate(${x} ${y}) scale(${scale})" d="${icon.path}"/>`;
     } else if (overlay === "image" && imageData) {
       const s = n * .235, p = (size - s) / 2, inset = s * .12;
       mark = `<rect x="${p}" y="${p}" width="${s}" height="${s}" rx="${s * .14}" fill="${light}"/><image href="${imageData}" x="${p + inset}" y="${p + inset}" width="${s - 2 * inset}" height="${s - 2 * inset}" preserveAspectRatio="xMidYMid meet"/>`;
@@ -456,7 +469,16 @@
     }
   }
   function markBitmap() {
-    if (overlay === "icon") return iconBits(selectedIcon);
+    if (overlay === "icon") {
+      const icon=builtinIcon(selectedIcon);
+      if (!icon.fontAwesome || typeof Path2D === "undefined") return iconBits(selectedIcon);
+      const canvas=document.createElement("canvas");canvas.width=canvas.height=32;
+      const ctx=canvas.getContext("2d"),[, , w, h]=icon.viewBox.split(/\s+/).map(Number);
+      const scale=Math.min(28/w,28/h);
+      ctx.translate((32-w*scale)/2,(32-h*scale)/2);ctx.scale(scale,scale);ctx.fillStyle="#000";ctx.fill(new Path2D(icon.path));
+      const data=ctx.getImageData(0,0,32,32).data;
+      return Array.from({length:32},(_,y)=>Array.from({length:32},(_,x)=>data[(y*32+x)*4+3]>130));
+    }
     const canvas = document.createElement("canvas"); canvas.width = canvas.height = 32;
     const ctx = canvas.getContext("2d");
     if (overlay === "image" && overlayImg) ctx.drawImage(overlayImg, 2, 2, 28, 28);
