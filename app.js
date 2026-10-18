@@ -4,7 +4,7 @@
   const messages = {
     pl: {
       pageTitle: "Master QR Maker — generator kodów QR", pageDescription: "Generator kodów QR z personalizacją, wydrukiem A4 i modelami stojaków 3D.",
-      workspace: "PRZESTRZEŃ ROBOCZA", tools: "Narzędzia", studio: "Studio QR", navCustomize: "Personalizacja", navExport: "Eksport",
+      workspace: "PRZESTRZEŃ ROBOCZA", tools: "Narzędzia", studio: "Studio QR", navCustomize: "Personalizacja", navExport: "Eksport", navPreview: "Podgląd",
       eyebrow: "KREATOR QR", heading: "Zaprojektuj swój kod QR", subheading: "Od cyfrowego linku po gotowy stojak — wszystko w jednym miejscu.", newProject: "Nowy projekt",
       section1Title: "Co chcesz zakodować?", section1Sub: "Wybierz typ i uzupełnij dane", section2Title: "Nadaj mu charakter", section2Sub: "Kolory, znak w środku i podpis", section3Title: "Przygotuj do użycia", section3Sub: "Wybierz format gotowego projektu",
       modeUrl: "Link", modeText: "Tekst", modeWifi: "Wi-Fi", modeEmail: "E-mail", modeContact: "Kontakt",
@@ -38,7 +38,7 @@
     },
     en: {
       pageTitle: "Master QR Maker — QR code generator", pageDescription: "Create custom QR codes, A4 prints and 3D stand models.",
-      workspace: "WORKSPACE", tools: "Tools", studio: "QR Studio", navCustomize: "Customize", navExport: "Export",
+      workspace: "WORKSPACE", tools: "Tools", studio: "QR Studio", navCustomize: "Customize", navExport: "Export", navPreview: "Preview",
       eyebrow: "QR CREATOR", heading: "Design your QR code", subheading: "From a digital link to a ready to print stand — all in one place.", newProject: "New project",
       section1Title: "What would you like to encode?", section1Sub: "Choose a type and enter the details", section2Title: "Make it yours", section2Sub: "Colors, center mark and caption", section3Title: "Ready to use", section3Sub: "Choose an output format",
       modeUrl: "Link", modeText: "Text", modeWifi: "Wi-Fi", modeEmail: "Email", modeContact: "Contact",
@@ -95,6 +95,7 @@
     const staticText = [
       [".nav-label", "workspace"], [".breadcrumbs strong", "studio"],
       ['.sidebar nav a[href="#studio"] span', "studio"], ['.sidebar nav a[href="#personalizacja"] span', "navCustomize"], ['.sidebar nav a[href="#eksport"] span', "navExport"],
+      ['.mobile-nav a[href="#studio"] span', "studio"], ['.mobile-nav a[href="#personalizacja"] span', "navCustomize"], ['.mobile-nav a[href="#eksport"] span', "navExport"], ['.mobile-nav a[href="#podglad"] span', "navPreview"],
       [".page-heading p", "subheading"], [".editor-column > .panel:first-child .panel-head h2", "section1Title"], [".editor-column > .panel:first-child .panel-head p", "section1Sub"],
       ["#personalizacja .panel-head h2", "section2Title"], ["#personalizacja .panel-head p", "section2Sub"], ["#eksport .panel-head h2", "section3Title"], ["#eksport .panel-head p", "section3Sub"],
       ['[data-mode="url"] span', "modeUrl"], ['[data-mode="text"] span', "modeText"], ['[data-mode="wifi"] span', "modeWifi"], ['[data-mode="email"] span', "modeEmail"], ['[data-mode="contact"] span', "modeContact"],
@@ -140,6 +141,7 @@
     q(".segmented")?.setAttribute("aria-label", lang === "pl" ? "Rodzaj znaku" : "Center mark type");
     q(".preview-tabs")?.setAttribute("aria-label", lang === "pl" ? "Rodzaj podglądu" : "Preview type");
     q(".sidebar nav")?.setAttribute("aria-label", lang === "pl" ? "Nawigacja główna" : "Main navigation");
+    q(".mobile-nav")?.setAttribute("aria-label", lang === "pl" ? "Nawigacja mobilna" : "Mobile navigation");
     q(".editor-column")?.setAttribute("aria-label", lang === "pl" ? "Ustawienia generatora" : "Generator settings");
     q(".preview-column")?.setAttribute("aria-label", lang === "pl" ? "Podgląd projektu" : "Design preview");
     $("darkColor").setAttribute("aria-label", t("darkColor"));
@@ -546,7 +548,7 @@
     document.querySelectorAll(".preview-view").forEach(v => v.classList.toggle("active", v.id===button.dataset.preview+"View"));
   }));
   document.querySelectorAll('[data-lang]').forEach(button => button.addEventListener("click", () => setLanguage(button.dataset.lang)));
-  const navItems = [...document.querySelectorAll(".sidebar nav .nav-item")];
+  const navItems = [...document.querySelectorAll(".sidebar nav .nav-item, .mobile-nav .nav-item")];
   let navLockUntil = 0;
   function setNavActive(id) {
     navItems.forEach(item => {
@@ -567,11 +569,12 @@
       scrollFrame = 0;
       if (Date.now() < navLockUntil) return;
       let active = "studio";
-      for (const id of ["personalizacja", "eksport"]) if ($(id).getBoundingClientRect().top <= 170) active = id;
+      const sections = window.innerWidth <= 550 ? ["personalizacja", "eksport", "podglad"] : ["personalizacja", "eksport"];
+      for (const id of sections) if ($(id).getBoundingClientRect().top <= 170) active = id;
       setNavActive(active);
     });
   }, { passive: true });
-  if (["studio", "personalizacja", "eksport"].includes(window.location?.hash?.slice(1))) setNavActive(window.location.hash.slice(1));
+  if (["studio", "personalizacja", "eksport", "podglad"].includes(window.location?.hash?.slice(1))) setNavActive(window.location.hash.slice(1));
   ["darkColor","lightColor"].forEach(id => $(id).addEventListener("input", () => { $(id==="darkColor"?"darkHex":"lightHex").textContent=$(id).value.toUpperCase(); queueRender(); }));
   $("caption").addEventListener("input", queueRender);
   $("nfcEnabled").addEventListener("change", () => { $("nfcOptions").hidden=!$("nfcEnabled").checked; queueRender(); });

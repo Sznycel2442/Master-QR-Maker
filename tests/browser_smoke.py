@@ -178,11 +178,39 @@ try:
 
         page.locator("#resetBtn").click()
         page.locator('[data-preview="qr"]').click()
+        for width in [320, 360, 390, 430, 550, 551, 768, 850, 851, 900, 960, 1000, 1001, 1024, 1150]:
+            page.set_viewport_size({"width": width, "height": 844})
+            actual_width = page.evaluate("document.documentElement.scrollWidth")
+            assert actual_width <= width + 1, f"Horizontal overflow at {width}px: {actual_width}px"
+            assert page.locator(".mobile-nav").is_visible() == (width <= 550)
+            if width <= 550:
+                button_width = page.locator(".type-option").first.bounding_box()["width"]
+                assert button_width >= 65, f"QR type buttons too narrow at {width}px"
+        page.set_viewport_size({"width": 320, "height": 844})
+        for target in ["personalizacja", "eksport", "podglad", "studio"]:
+            item = page.locator(f'.mobile-nav a[href="#{target}"]')
+            item.click()
+            assert item.get_attribute("aria-current") == "location"
+            assert page.evaluate("document.documentElement.scrollWidth <= innerWidth + 1")
         page.set_viewport_size({"width": 390, "height": 844})
         page.locator("#qrPreview svg").wait_for()
         page.screenshot(path=str(ROOT / "preview-mobile.png"), full_page=True)
         assert page.evaluate("document.documentElement.scrollWidth <= innerWidth + 1")
         page.locator('[data-lang="en"]').click()
+        assert page.locator('.mobile-nav a[href="#podglad"] span').inner_text() == "Preview"
+        for width in [320, 390, 550, 851, 900]:
+            page.set_viewport_size({"width": width, "height": 844})
+            assert page.evaluate("document.documentElement.scrollWidth <= innerWidth + 1"), f"English layout overflows at {width}px"
+        page.set_viewport_size({"width": 320, "height": 844})
+        page.locator('[data-mode="wifi"]').click()
+        page.locator('[data-key="ssid"]').fill("Long guest network name 123456789")
+        page.locator('[data-key="password"]').fill("LongPassword123456789")
+        page.locator('[data-key="showDetails"]').check()
+        page.locator("#nfcEnabled").check()
+        page.locator('[data-overlay="icon"]').click()
+        page.locator('[data-preview="stand"]').click()
+        assert page.evaluate("document.documentElement.scrollWidth <= innerWidth + 1")
+        page.locator("#resetBtn").click()
         page.locator("#printBtn").click()
         print_markup = page.locator("iframe").last.get_attribute("srcdoc")
         assert "size:A4" in print_markup and 'lang="en"' in print_markup

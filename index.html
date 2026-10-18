@@ -44,7 +44,13 @@
     </aside>
 
     <main class="main" id="studio">
-      <header class="topbar"><div class="breadcrumbs">Narzędzia <span>/</span> <strong>Studio QR</strong></div><div class="top-actions"><div class="lang-switch" role="group" aria-label="Language / Język"><button type="button" data-lang="pl" class="active" aria-pressed="true">PL</button><button type="button" data-lang="en" aria-pressed="false">EN</button></div></div></header>
+      <header class="topbar"><div class="breadcrumbs">Narzędzia <span>/</span> <strong>Studio QR</strong></div><strong class="mobile-brand">Master QR Maker</strong><div class="top-actions"><div class="lang-switch" role="group" aria-label="Language / Język"><button type="button" data-lang="pl" class="active" aria-pressed="true">PL</button><button type="button" data-lang="en" aria-pressed="false">EN</button></div></div></header>
+      <nav class="mobile-nav" aria-label="Nawigacja mobilna">
+        <a class="nav-item active" href="#studio" aria-current="location"><svg><use href="#i-grid"/></svg><span>Studio QR</span></a>
+        <a class="nav-item" href="#personalizacja"><svg><use href="#i-spark"/></svg><span>Personalizacja</span></a>
+        <a class="nav-item" href="#eksport"><svg><use href="#i-down"/></svg><span>Eksport</span></a>
+        <a class="nav-item" href="#podglad"><svg><use href="#i-image"/></svg><span>Podgląd</span></a>
+      </nav>
       <div class="workspace">
         <div class="page-heading"><div><div class="eyebrow"><span class="eyebrow-line"></span> KREATOR QR</div><h1>Zaprojektuj swój kod QR<span>.</span></h1><p>Od cyfrowego linku po gotowy stojak — wszystko w jednym miejscu.</p></div><button id="resetBtn" class="btn btn-quiet"><svg><use href="#i-reset"/></svg> Nowy projekt</button></div>
 
@@ -96,7 +102,7 @@
             </div>
           </section>
 
-          <section class="preview-column" aria-label="Podgląd projektu">
+          <section class="preview-column" id="podglad" aria-label="Podgląd projektu">
             <div class="preview-panel"><div class="preview-head"><div><div class="preview-kicker">PODGLĄD NA ŻYWO</div><h2>Twój projekt</h2></div><span class="live-pill"><i></i> Na żywo</span></div>
               <div class="preview-tabs" role="tablist" aria-label="Rodzaj podglądu"><button type="button" role="tab" class="preview-tab active" aria-selected="true" data-preview="qr">Kod QR</button><button type="button" role="tab" class="preview-tab" aria-selected="false" data-preview="paper">Kartka A4</button><button type="button" role="tab" class="preview-tab" aria-selected="false" data-preview="stand">Stojak 3D</button></div>
               <div class="preview-stage">
